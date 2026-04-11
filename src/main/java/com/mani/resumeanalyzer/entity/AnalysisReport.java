@@ -19,7 +19,7 @@ public class AnalysisReport {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long id;
+	private Long id;
 	
 	@Column(columnDefinition = "TEXT")
 	private String missedSkills;
