@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class ParserService {
 	
+	// Branch on extension: .pdf vs .docx.
 	public String parseResume(MultipartFile file) {
 
 		String fileName = file.getOriginalFilename();

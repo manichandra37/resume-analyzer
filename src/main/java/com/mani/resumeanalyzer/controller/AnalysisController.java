@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mani.resumeanalyzer.dto.AnalysisRequest;
 import com.mani.resumeanalyzer.dto.ClaudeResponse;
-import com.mani.resumeanalyzer.entity.AnalysisReport;
 import com.mani.resumeanalyzer.service.ResumeAnalysisService;
 
 @RestController
@@ -25,6 +24,7 @@ public class AnalysisController {
 		this.resumeAnalysisService = resumeAnalysisService;
 	}
 
+	// POST body: jobDescription. Calls Claude, saves report, returns DTO.
 	@PostMapping("/{resumeId}")
 	public ResponseEntity<ClaudeResponse> analyzeResume(@PathVariable long resumeId,
 			@RequestBody AnalysisRequest jobDescription) {
@@ -38,6 +38,7 @@ public class AnalysisController {
 
 	}
 
+	// List reports for one resume.
 	@GetMapping("/{resumeId}/reports")
 	public ResponseEntity<List<ClaudeResponse>> getReport(@PathVariable long resumeId) {
 
@@ -45,6 +46,7 @@ public class AnalysisController {
 		return ResponseEntity.ok(reports);
 	}
 
+	// Get one report by id.
 	@GetMapping("/reports/{reportId}")
 	public ResponseEntity<ClaudeResponse> getReportById(@PathVariable long reportId) {
 

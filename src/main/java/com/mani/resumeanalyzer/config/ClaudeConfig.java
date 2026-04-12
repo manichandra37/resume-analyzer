@@ -12,6 +12,7 @@ public class ClaudeConfig {
     @Value("${anthropic.api.key}")
     private String apiKey;
 
+    // Anthropic SDK client; key from anthropic.api.key.
     @Bean
     public AnthropicClient anthropicClient() {
         return AnthropicOkHttpClient.builder()

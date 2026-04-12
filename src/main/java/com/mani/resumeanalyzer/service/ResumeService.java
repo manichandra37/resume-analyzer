@@ -20,6 +20,7 @@ public class ResumeService {
 	ParserService parserService;
 	
 	
+	// Parse upload, save resume, return status enum name.
 	public String uploadAndProcessResume(MultipartFile file) {
 		
 		Resume resume = new Resume();

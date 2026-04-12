@@ -32,6 +32,7 @@ public class ResumeAnalysisService {
 	@Autowired
 	AnalysisReportRepository analysisReportRepository;
 
+	// Claude analyze + persist; returns mapped DTO.
 	public ClaudeResponse claudeInteract(long id, String jobDescription) {
 
 		Resume resume = resumeRepository.findById(id)
@@ -88,6 +89,7 @@ public class ResumeAnalysisService {
 		}
 	}
 
+	// Reports for resume id; 404 if empty.
 	public List<ClaudeResponse> getReports(long id) {
 
 		List<AnalysisReport> reports = analysisReportRepository.findByResumeId(id);
@@ -97,6 +99,7 @@ public class ResumeAnalysisService {
 		return reports.stream().map(this::mapToResponse).toList();
 	}
 
+	// Single report by pk; 404 if missing.
 	public ClaudeResponse getReportById(long reportId) {
 		AnalysisReport report = analysisReportRepository.findById(reportId)
 				.orElseThrow(() -> new ResumeNotFoundException("Report not found for id:" + reportId));
@@ -105,7 +108,7 @@ public class ResumeAnalysisService {
 
 	}
 
-	// Helper method
+	// Report entity to response DTO.
 	private ClaudeResponse mapToResponse(AnalysisReport report) {
 		ClaudeResponse response = new ClaudeResponse();
 		response.setId(report.getId());

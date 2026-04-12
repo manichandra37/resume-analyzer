@@ -20,6 +20,7 @@ public class ResumeController {
 		this.resumeService = resumeService;
 	}
 
+	// Multipart "file": parse, save resume, return upload status string.
 	@PostMapping("/upload")
 	public ResponseEntity<String> uploadresume(@RequestParam("file") MultipartFile file){
 		String result = resumeService.uploadAndProcessResume(file);
