@@ -1,6 +1,9 @@
 package com.mani.resumeanalyzer.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mani.resumeanalyzer.dto.AnalysisRequest;
 import com.mani.resumeanalyzer.dto.ClaudeResponse;
+import com.mani.resumeanalyzer.entity.AnalysisReport;
 import com.mani.resumeanalyzer.service.ResumeAnalysisService;
 
 @RestController
@@ -24,13 +28,28 @@ public class AnalysisController {
 	@PostMapping("/{resumeId}")
 	public ResponseEntity<ClaudeResponse> analyzeResume(@PathVariable long resumeId,
 			@RequestBody AnalysisRequest jobDescription) {
-		
-		if (jobDescription == null || jobDescription.getJobDescription() == null || jobDescription.getJobDescription().isBlank()) {
-	        return ResponseEntity.badRequest().build();
-	    }
+
+		if (jobDescription == null || jobDescription.getJobDescription() == null
+				|| jobDescription.getJobDescription().isBlank()) {
+			return ResponseEntity.badRequest().build();
+		}
 		ClaudeResponse result = resumeAnalysisService.claudeInteract(resumeId, jobDescription.getJobDescription());
 		return ResponseEntity.ok(result);
 
+	}
+
+	@GetMapping("/{resumeId}/reports")
+	public ResponseEntity<List<ClaudeResponse>> getReport(@PathVariable long resumeId) {
+
+		List<ClaudeResponse> reports = resumeAnalysisService.getReports(resumeId);
+		return ResponseEntity.ok(reports);
+	}
+
+	@GetMapping("/reports/{reportId}")
+	public ResponseEntity<ClaudeResponse> getReportById(@PathVariable long reportId) {
+
+		ClaudeResponse report = resumeAnalysisService.getReportById(reportId);
+		return ResponseEntity.ok(report);
 	}
 
 }

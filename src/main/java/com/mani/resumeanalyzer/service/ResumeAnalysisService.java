@@ -1,6 +1,7 @@
 package com.mani.resumeanalyzer.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mani.resumeanalyzer.dto.ClaudeResponse;
 import com.mani.resumeanalyzer.entity.AnalysisReport;
 import com.mani.resumeanalyzer.entity.Resume;
+import com.mani.resumeanalyzer.exception.ResumeNotFoundException;
 import com.mani.resumeanalyzer.repository.AnalysisReportRepository;
 import com.mani.resumeanalyzer.repository.ResumeRepository;
 
@@ -32,7 +34,8 @@ public class ResumeAnalysisService {
 
 	public ClaudeResponse claudeInteract(long id, String jobDescription) {
 
-		Resume resume = resumeRepository.findById(id).orElseThrow(() -> new RuntimeException("Resume  not Found"));
+		Resume resume = resumeRepository.findById(id)
+				.orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
 
 		String resumeText = resume.getExtractedText();
 
@@ -78,21 +81,41 @@ public class ResumeAnalysisService {
 
 			AnalysisReport savedReport = analysisReportRepository.save(report);
 
-			ClaudeResponse claudeResponse = new ClaudeResponse();
-
-			claudeResponse.setAnalyzedAt(LocalDateTime.now());
-			claudeResponse.setId(savedReport.getId());
-			claudeResponse.setJobTitle(jobTitle);
-			claudeResponse.setMatchedSkills(matchedSkills);
-			claudeResponse.setMissedSkills(missedSkills);
-			claudeResponse.setScore(score);
-			claudeResponse.setSummary(summary);
-
-			return claudeResponse;
+			return mapToResponse(savedReport);
 
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException("Failed to parse Claude response", e);
 		}
+	}
+
+	public List<ClaudeResponse> getReports(long id) {
+
+		List<AnalysisReport> reports = analysisReportRepository.findByResumeId(id);
+		if (reports.isEmpty()) {
+			throw new ResumeNotFoundException("No reports found for resume id: " + id);
+		}
+		return reports.stream().map(this::mapToResponse).toList();
+	}
+
+	public ClaudeResponse getReportById(long reportId) {
+		AnalysisReport report = analysisReportRepository.findById(reportId)
+				.orElseThrow(() -> new ResumeNotFoundException("Report not found for id:" + reportId));
+
+		return mapToResponse(report);
+
+	}
+
+	// Helper method
+	private ClaudeResponse mapToResponse(AnalysisReport report) {
+		ClaudeResponse response = new ClaudeResponse();
+		response.setId(report.getId());
+		response.setJobTitle(report.getJobTitle());
+		response.setMatchedSkills(report.getMatchedSkills());
+		response.setMissedSkills(report.getMissedSkills());
+		response.setScore(report.getScore());
+		response.setSummary(report.getSummary());
+		response.setAnalyzedAt(report.getAnalyzedAt());
+		return response;
 	}
 
 }
