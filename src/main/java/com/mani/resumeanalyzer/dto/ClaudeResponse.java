@@ -14,5 +14,7 @@ public class ClaudeResponse {
 	private int score;
 	private String summary;
 	private LocalDateTime analyzedAt;
+	
+	private String improvedContent;
 
 }

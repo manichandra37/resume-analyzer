@@ -33,7 +33,13 @@ public class AnalysisController {
 				|| jobDescription.getJobDescription().isBlank()) {
 			return ResponseEntity.badRequest().build();
 		}
-		ClaudeResponse result = resumeAnalysisService.claudeInteract(resumeId, jobDescription.getJobDescription());
+
+		if (jobDescription.getTemplateType() == null || jobDescription.getTemplateType().isBlank()) {
+			jobDescription.setTemplateType("hybrid");
+		}
+
+		ClaudeResponse result = resumeAnalysisService.claudeInteract(resumeId, jobDescription.getJobDescription(),
+				jobDescription.getTemplateType());
 		return ResponseEntity.ok(result);
 
 	}

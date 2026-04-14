@@ -16,31 +16,36 @@ import lombok.Data;
 @Data
 @Table(name = "analysis_report")
 public class AnalysisReport {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-	
+
 	@Column(columnDefinition = "TEXT")
 	private String missedSkills;
-	
+
 	private int score;
-	
+
 	private String jobTitle;
-	
+
 	@Column(columnDefinition = "TEXT")
 	private String jobDescription;
-	
+
+	@Column(columnDefinition = "TEXT")
+	private String improvedContent;
+
+	private String templateType;
+
 	@ManyToOne
 	@JoinColumn(name = "resume_id")
 	private Resume resume;
-	
+
 	@Column(columnDefinition = "TEXT")
 	private String matchedSkills;
-	
+
 	@Column(columnDefinition = "TEXT")
 	private String summary;
-	
+
 	private LocalDateTime analyzedAt;
-	
+
 }
