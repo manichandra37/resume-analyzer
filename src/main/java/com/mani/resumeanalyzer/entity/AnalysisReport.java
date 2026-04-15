@@ -35,7 +35,10 @@ public class AnalysisReport {
 	private String improvedContent;
 
 	private String templateType;
-
+	
+	@Column(columnDefinition = "TEXT")
+	private String contactInfo;
+	
 	@ManyToOne
 	@JoinColumn(name = "resume_id")
 	private Resume resume;

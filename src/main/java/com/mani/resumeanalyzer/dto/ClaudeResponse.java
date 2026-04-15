@@ -16,5 +16,7 @@ public class ClaudeResponse {
 	private LocalDateTime analyzedAt;
 	
 	private String improvedContent;
+	private String contactInfo;
+	private String templateType;
 
 }

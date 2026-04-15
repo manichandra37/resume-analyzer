@@ -33,7 +33,7 @@ public class ResumeAnalysisService {
 	AnalysisReportRepository analysisReportRepository;
 
 	// Claude analyze + persist; returns mapped DTO.
-	public ClaudeResponse claudeInteract(long id, String jobDescription,String templateType) {
+	public ClaudeResponse claudeInteract(long id, String jobDescription, String templateType) {
 
 		Resume resume = resumeRepository.findById(id)
 				.orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
@@ -49,18 +49,18 @@ public class ResumeAnalysisService {
 			    + "matchedSkills: comma-separated list of skills from the resume that match the job description. If none, write 'None'\n"
 			    + "missedSkills: comma-separated list of required skills from the job description that are missing in the resume. If none, write 'None'\n"
 			    + "jobTitle: the job title from the job description\n"
+			    + "contactInfo: a JSON object extracted from the top of the resume containing: name, email, phone, location, linkedin, github, leetcode. If any field is not found, write 'N/A'\n"
 			    + "The resume should be rewritten in " + templateType + " style:\n"
 			    + "- service: emphasize client projects, team collaboration, delivery timelines, technology diversity\n"
 			    + "- product: emphasize ownership, metrics, scale, system design, measurable impact\n"
 			    + "- hybrid: balance both project delivery and measurable impact\n"
 			    + "improvedResume: a JSON object with the resume rewritten for 95+ ATS score containing:\n"
 			    + "  professionalSummary: a strong 3-4 sentence summary tailored to the job description\n"
-			    + "  skills: array of skill strings, include matched skills and naturally add missed skills\n"
+			    + "  skills: array of objects, each with category (e.g. 'Programming & Frameworks', 'Cloud & DevOps', 'Databases', 'Testing & Quality', 'Observability & Messaging') and items (comma-separated skill strings)\n"
 			    + "  experience: array of objects, each with title, company, duration, and bullets (array of strings rewritten with strong action verbs and metrics)\n"
 			    + "  education: array of objects, each with degree, institution, year\n"
 			    + "  certifications: array of certification name strings\n"
 			    + "Do not include any text outside the JSON object. No markdown, no explanation.";
-		
 		
 		MessageCreateParams params = MessageCreateParams.builder().model(Model.CLAUDE_HAIKU_4_5).maxTokens(4096L)
 				.addUserMessage(prompt).build();
@@ -82,6 +82,10 @@ public class ResumeAnalysisService {
 			String missedSkills = jsonNode.get("missedSkills").asText();
 			String jobTitle = jsonNode.get("jobTitle").asText();
 
+			JsonNode contactInfo = jsonNode.get("contactInfo");
+			String contactInfoStr = mapper.writeValueAsString(contactInfo);
+			
+
 			String improvedContent = mapper.writeValueAsString(jsonNode.get("improvedResume"));
 
 			AnalysisReport report = new AnalysisReport();
@@ -95,6 +99,8 @@ public class ResumeAnalysisService {
 			report.setResume(resume);
 			report.setJobTitle(jobTitle);
 			report.setImprovedContent(improvedContent);
+			report.setContactInfo(contactInfoStr);
+			report.setTemplateType(templateType);
 
 			AnalysisReport savedReport = analysisReportRepository.save(report);
 
@@ -135,6 +141,8 @@ public class ResumeAnalysisService {
 		response.setSummary(report.getSummary());
 		response.setAnalyzedAt(report.getAnalyzedAt());
 		response.setImprovedContent(report.getImprovedContent());
+		response.setContactInfo(report.getContactInfo());
+		response.setTemplateType(report.getTemplateType());
 		return response;
 	}
 
