@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.anthropic.client.AnthropicClient;
@@ -16,9 +17,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mani.resumeanalyzer.dto.ClaudeResponse;
 import com.mani.resumeanalyzer.entity.AnalysisReport;
 import com.mani.resumeanalyzer.entity.Resume;
+import com.mani.resumeanalyzer.entity.Users;
 import com.mani.resumeanalyzer.exception.ResumeNotFoundException;
 import com.mani.resumeanalyzer.repository.AnalysisReportRepository;
 import com.mani.resumeanalyzer.repository.ResumeRepository;
+import com.mani.resumeanalyzer.repository.UserRepository;
 
 @Service
 public class ResumeAnalysisService {
@@ -32,36 +35,43 @@ public class ResumeAnalysisService {
 	@Autowired
 	AnalysisReportRepository analysisReportRepository;
 
+	@Autowired
+	UserRepository userRepository;
+
 	// Claude analyze + persist; returns mapped DTO.
 	public ClaudeResponse claudeInteract(long id, String jobDescription, String templateType) {
+
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
 		Resume resume = resumeRepository.findById(id)
 				.orElseThrow(() -> new ResumeNotFoundException("Resume not found with id: " + id));
 
+		if (!resume.getUser().getEmail().equals(email)) {
+			throw new RuntimeException("You don't have access to this resume");
+		}
+
 		String resumeText = resume.getExtractedText();
 
-		String prompt = "Analyze this resume against the job description.\n\n" 
-			    + "Resume:\n" + resumeText + "\n\n"
-			    + "Job Description:\n" + jobDescription + "\n\n" 
-			    + "Respond ONLY in JSON format with these fields:\n"
-			    + "score: number from 0-100 representing how well the resume matches the job\n"
-			    + "summary: brief analysis of the match\n"
-			    + "matchedSkills: comma-separated list of skills from the resume that match the job description. If none, write 'None'\n"
-			    + "missedSkills: comma-separated list of required skills from the job description that are missing in the resume. If none, write 'None'\n"
-			    + "jobTitle: the job title from the job description\n"
-			    + "contactInfo: a JSON object extracted from the top of the resume containing: name, email, phone, location, linkedin, github, leetcode. If any field is not found, write 'N/A'\n"
-			    + "The resume should be rewritten in " + templateType + " style:\n"
-			    + "- service: emphasize client projects, team collaboration, delivery timelines, technology diversity\n"
-			    + "- product: emphasize ownership, metrics, scale, system design, measurable impact\n"
-			    + "- hybrid: balance both project delivery and measurable impact\n"
-			    + "improvedResume: a JSON object with the resume rewritten for 95+ ATS score containing:\n"
-			    + "  professionalSummary: a strong 3-4 sentence summary tailored to the job description\n"
-			    + "  skills: array of objects, each with category (e.g. 'Programming & Frameworks', 'Cloud & DevOps', 'Databases', 'Testing & Quality', 'Observability & Messaging') and items (comma-separated skill strings)\n"
-			    + "  experience: array of objects, each with title, company, duration, and bullets (array of strings rewritten with strong action verbs and metrics)\n"
-			    + "  education: array of objects, each with degree, institution, year\n"
-			    + "  certifications: array of certification name strings\n"
-			    + "Do not include any text outside the JSON object. No markdown, no explanation.";
-		
+		String prompt = "Analyze this resume against the job description.\n\n" + "Resume:\n" + resumeText + "\n\n"
+				+ "Job Description:\n" + jobDescription + "\n\n" + "Respond ONLY in JSON format with these fields:\n"
+				+ "score: number from 0-100 representing how well the resume matches the job\n"
+				+ "summary: brief analysis of the match\n"
+				+ "matchedSkills: comma-separated list of skills from the resume that match the job description. If none, write 'None'\n"
+				+ "missedSkills: comma-separated list of required skills from the job description that are missing in the resume. If none, write 'None'\n"
+				+ "jobTitle: the job title from the job description\n"
+				+ "contactInfo: a JSON object extracted from the top of the resume containing: name, email, phone, location, linkedin, github, leetcode. If any field is not found, write 'N/A'\n"
+				+ "The resume should be rewritten in " + templateType + " style:\n"
+				+ "- service: emphasize client projects, team collaboration, delivery timelines, technology diversity\n"
+				+ "- product: emphasize ownership, metrics, scale, system design, measurable impact\n"
+				+ "- hybrid: balance both project delivery and measurable impact\n"
+				+ "improvedResume: a JSON object with the resume rewritten for 95+ ATS score containing:\n"
+				+ "  professionalSummary: a strong 3-4 sentence summary tailored to the job description\n"
+				+ "  skills: array of objects, each with category (e.g. 'Programming & Frameworks', 'Cloud & DevOps', 'Databases', 'Testing & Quality', 'Observability & Messaging') and items (comma-separated skill strings)\n"
+				+ "  experience: array of objects, each with title, company, duration, and bullets (array of strings rewritten with strong action verbs and metrics)\n"
+				+ "  education: array of objects, each with degree, institution, year\n"
+				+ "  certifications: array of certification name strings\n"
+				+ "Do not include any text outside the JSON object. No markdown, no explanation.";
+
 		MessageCreateParams params = MessageCreateParams.builder().model(Model.CLAUDE_HAIKU_4_5).maxTokens(4096L)
 				.addUserMessage(prompt).build();
 
@@ -84,7 +94,6 @@ public class ResumeAnalysisService {
 
 			JsonNode contactInfo = jsonNode.get("contactInfo");
 			String contactInfoStr = mapper.writeValueAsString(contactInfo);
-			
 
 			String improvedContent = mapper.writeValueAsString(jsonNode.get("improvedResume"));
 
@@ -114,7 +123,10 @@ public class ResumeAnalysisService {
 	// Reports for resume id; 404 if empty.
 	public List<ClaudeResponse> getReports(long id) {
 
-		List<AnalysisReport> reports = analysisReportRepository.findByResumeId(id);
+		String email = SecurityContextHolder.getContext().getAuthentication().getName();
+		Users user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+		List<AnalysisReport> reports = analysisReportRepository.findByResumeId(user.getId());
 		if (reports.isEmpty()) {
 			throw new ResumeNotFoundException("No reports found for resume id: " + id);
 		}

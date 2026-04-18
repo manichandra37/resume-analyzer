@@ -1,5 +1,7 @@
 package com.mani.resumeanalyzer.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.mani.resumeanalyzer.entity.Resume;
 import com.mani.resumeanalyzer.service.ResumeGeneratorService;
 import com.mani.resumeanalyzer.service.ResumeService;
 
@@ -37,6 +40,11 @@ public class ResumeController {
 		return ResponseEntity.ok().header("Content-Disposition", "attachment; filename=resume.docx")
 				.header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 				.body(docx);
+	}
+	
+	@GetMapping("/My-resumes")
+	public ResponseEntity<List<Resume>> getMyResumes() {
+	    return ResponseEntity.ok(resumeService.getMyResumes());
 	}
 
 }
