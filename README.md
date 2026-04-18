@@ -1,93 +1,33 @@
-# Resume Analyzer
+# AI Resume Analyzer — Backend
 
-A backend service built with Spring Boot that allows users to upload resumes in PDF or DOCX format, extracts text content, and stores the parsed data in a PostgreSQL database for further analysis.
-
-## Tech Stack
-
-- **Java 21**
-- **Spring Boot**
-- **PostgreSQL** -- persistent storage
-- **Apache PDFBox** -- PDF text extraction
-- **Apache POI** -- DOCX text extraction
-- **Maven** -- build and dependency management
-
-## Architecture
-
-```
-Controller  -->  ResumeService  -->  ParserService  -->  Repository
-   |                 |                    |                  |
- REST API      Business logic     PDF/DOCX parsing     Database
-```
-
-- **Controller** -- exposes REST endpoints for upload and retrieval.
-- **ResumeService** -- orchestrates the workflow between parsing and persistence.
-- **ParserService** -- delegates to PDFBox or POI based on file type and returns extracted text.
-- **Repository** -- Spring Data JPA repository backed by PostgreSQL.
+AI-powered resume analysis and generation tool built with Spring Boot and Claude API.
 
 ## Features
+- Resume upload and parsing (PDF/DOCX)
+- AI-powered resume analysis against job descriptions
+- Resume generation with 3 template styles (Service/Product/Hybrid)
+- DOCX download
+- JWT authentication
+- User-scoped data access
 
-- Upload resumes in PDF or DOCX format
-- Automatic text extraction from uploaded documents
-- Persistent storage of resume metadata and extracted content
-- Retrieve all stored resumes or a single resume by ID
+## Tech Stack
+- Java 21, Spring Boot 4.0.4
+- PostgreSQL
+- Anthropic Claude API (Haiku)
+- Apache POI (DOCX generation)
+- JWT (Authentication)
 
 ## API Endpoints
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/resumes/upload
+- GET /api/resumes/my-resumes
+- POST /api/resumes/{resumeId} (analyze)
+- GET /api/resumes/{resumeId}/reports
+- GET /api/resumes/generate/{reportId} (download DOCX)
 
-| Method | Endpoint                  | Description                    |
-|--------|---------------------------|--------------------------------|
-| POST   | `/api/resumes/upload`     | Upload a resume (PDF or DOCX)  |
-| GET    | `/api/resumes`            | List all stored resumes        |
-| GET    | `/api/resumes/{id}`       | Retrieve a specific resume     |
-
-### Upload Example
-
-```bash
-curl -X POST http://localhost:8080/api/resumes/upload \
-  -F "file=@resume.pdf"
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Java 21
-- PostgreSQL
-- Maven
-
-### Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/manichandra37/resume-analyzer.git
-   cd resume-analyzer
-   ```
-
-2. **Configure the database**
-
-   Create a PostgreSQL database and update `src/main/resources/application.properties`:
-
-   ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/resume_analyzer
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
-   spring.jpa.hibernate.ddl-auto=update
-   ```
-
-3. **Build the project**
-
-   ```bash
-   mvn clean install
-   ```
-
-4. **Run the application**
-
-   ```bash
-   mvn spring-boot:run
-   ```
-
-   The server starts at `http://localhost:8080`.
-
-## Roadmap
-
-- **AI-powered resume analysis** -- Integrate the Anthropic API to provide intelligent analysis of resume content, including skill extraction, experience summarization, and actionable feedback.
+## Setup
+1. Clone the repo
+2. Set environment variable: ANTHROPIC_API_KEY
+3. Configure PostgreSQL in application.properties
+4. Run: mvn spring-boot:run
