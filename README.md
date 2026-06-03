@@ -262,4 +262,4 @@ PostgreSQL Database
 
 **Manichandra Maddi**
 - GitHub: [@manichandra37](https://github.com/manichandra37)
-- LinkedIn: [Manichandra Maddi](https://linkedin.com/in/manichandra-maddi)
+- LinkedIn: [Manichandra Maddi](https://linkedin.com/in/manichandramaddi)
