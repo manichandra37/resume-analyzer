@@ -41,10 +41,10 @@ public class ResumeController {
 				.header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 				.body(docx);
 	}
-	
+
 	@GetMapping("/My-resumes")
 	public ResponseEntity<List<Resume>> getMyResumes() {
-	    return ResponseEntity.ok(resumeService.getMyResumes());
+		return ResponseEntity.ok(resumeService.getMyResumes());
 	}
 
 }
