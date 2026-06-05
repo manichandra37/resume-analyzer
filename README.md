@@ -2,6 +2,8 @@
 
 An AI-powered resume analysis and generation tool that helps job seekers optimize their resumes for specific job descriptions. Built with Spring Boot and powered by Anthropic's Claude AI.
 
+# Frontend repo: [resume-analyzer-frontend](https://github.com/manichandra37/resume-analyzer-frontend)
+
 ## What It Does
 
 1. **Upload** your resume (PDF or DOCX)
